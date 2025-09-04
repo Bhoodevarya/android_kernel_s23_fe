@@ -5,6 +5,11 @@ echo -e "\n[INFO]: BUILD STARTED..!\n"
 #init submodules
 git submodule init && git submodule update
 
+# Define OEM variables
+export PLATFORM_VERSION=12
+export ANDROID_MAJOR_VERSION=s
+export TARGET_SOC=s5e9925
+
 export KERNEL_ROOT="$(pwd)"
 export ARCH=arm64
 export KBUILD_BUILD_USER="@ravindu644"
@@ -18,7 +23,7 @@ if [ ! -f ".requirements" ]; then
 fi
 
 # Create necessary directories
-mkdir -p "${KERNEL_ROOT}/out" "${KERNEL_ROOT}/build" "${HOME}/toolchains"
+mkdir -p "${KERNEL_ROOT}/build" "${HOME}/toolchains"
 
 # init clang-r416183b
 if [ ! -d "${HOME}/toolchains/clang-r416183b" ]; then
@@ -48,8 +53,9 @@ export BUILD_CC="${HOME}/toolchains/clang-r416183b/bin/clang"
 
 # Build options for the kernel
 export BUILD_OPTIONS="
--C ${KERNEL_ROOT} \
-O=${KERNEL_ROOT}/out \
+PLATFORM_VERSION=12 \
+ANDROID_MAJOR_VERSION=s \
+TARGET_SOC=s5e9925 \
 -j$(nproc) \
 ARCH=arm64 \
 LLVM=1 \
@@ -62,7 +68,7 @@ CLANG_TRIPLE=aarch64-linux-gnu- \
 build_kernel(){
     # Make default configuration.
     # Replace 'your_defconfig' with the name of your kernel's defconfig
-    make ${BUILD_OPTIONS} your_defconfig
+    make ${BUILD_OPTIONS} s5e9925-r11sxxx_defconfig custom.config
 
     # Configure the kernel (GUI)
     make ${BUILD_OPTIONS} menuconfig
@@ -71,7 +77,7 @@ build_kernel(){
     make ${BUILD_OPTIONS} Image || exit 1
 
     # Copy the built kernel to the build directory
-    cp "${KERNEL_ROOT}/out/arch/arm64/boot/Image" "${KERNEL_ROOT}/build"
+    cp "${KERNEL_ROOT}/arch/arm64/boot/Image" "${KERNEL_ROOT}/build"
 
     echo -e "\n[INFO]: BUILD FINISHED..!"
 }
